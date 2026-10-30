@@ -126,6 +126,8 @@ The program does not require those aliases. The per-request prompt carries the s
 | `python nomo.py ask "..."` | One turn |
 | `python nomo.py chat` | Turns until a blank line |
 | `python nomo.py dream "goal"` | Explore a small tree, replay it, promote a policy |
+| `python nomo.py evolve "task"` | Architect, critic, then a sandboxed executor |
+| `python nomo.py absorb URL` | Save one public page into the vault |
 | `python nomo.py parallel "..."` | Scout, critic, and builder, then a merge |
 | `python nomo.py choose "question" A B` | Typed choice with an uncalibrated score |
 | `python nomo.py replicate <name>` | Copy a stopped child under `children/` |
@@ -168,6 +170,12 @@ Set `NOMO_OPERATOR` before the first run if the peer card should use a name you 
 **Needle 3.** Cactus Compute's on-device tool caller (`import needle`, `generation=3`). The published weights are 2-bit packed, which is the ternary-style layer in this program. Needle routes a tool. It does not write the chat reply. Telemetry is turned off with `NEEDLE_TELEMETRY=0` and `DO_NOT_TRACK=1` before the import. One development run, after the weight download, routed `vault_search` at confidence 0.80, about 176 tokens/s, and 132 MB peak RAM. Treat that as a measurement from one machine, not a quota.
 
 **Journal.** The `jev-` prefix is this file format. Hosted TypeSafe Jev (`jev-1.14.0`, Choice / Noul / Score) is a different system. This program does not call it and does not ship its weights. `choose` asks the local route model for JSON `{choice, score, because}` and stores `calibrated: false`.
+
+**Memory.** Every prompt receives three local stores before the model answers. `vault/record.jsonl` is the episodic log: each line is SHA-256 chained to the previous line (the DOC-SEAL). The vault index is the semantic store, using `nomic-embed-text` when Ollama has it and keyword overlap otherwise. `vault/graph.sqlite` holds entities, decisions, and modules. `graph_note` and `graph_lookup` are tools. A clone needs no Chroma, Qdrant, FAISS, or Neo4j process.
+
+**Evolve.** `python nomo.py evolve "task"` asks the code model to write one Python file, asks a critic to read it, and runs it only when `NOMO_ALLOW_RUN=1`. The process working directory is `vault/sandbox`. Source that imports sockets, subprocesses, or a disassembler is refused. A passing run is saved under `vault/fossils/` and the next prompt can read it. The cycle does not edit `nomo/*.py` and does not commit or push. `NOMO_CODE_MODEL` selects the writer. Public coder tags such as `qwen2.5-coder` are preferred when they are installed. Otherwise the reason model writes the file.
+
+**Absorb.** `python nomo.py absorb https://example.com/page` downloads one public page and stores the text as a vault note. Loopback, private, and link-local hosts are refused.
 
 **Dream-RSI.** `dream` runs the loop from Zheng, Wu, Zhang, et al., [Dream-RSI](https://github.com/zhengkid/Dream-RSI) (arXiv:2609.14858, 2026). The research code is [google-research/dream-rsi](https://github.com/google-research/dream-rsi). Online exploration writes a small tree of attempts to `vault/dreams/worlds/iterNNN/raw_scores.json`. Offline dreaming replays `parallel_refine`, `best_first`, and `wide` on those saved scores and promotes the policy with the higher reward. A tie keeps the incumbent. The replay does not call the model again. The paper's agent is Gemini and its evaluator runs the candidate program. This clone writes attempts with the local reason model, stores a 0–1 score, and keeps the policy as one of those three names. The cycle leaves `nomo/*.py` alone. Defaults are 2 branches and 1 refinement, capped at 4 branches, 2 refinements, and 3 rounds.
 

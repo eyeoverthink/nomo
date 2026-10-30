@@ -31,6 +31,16 @@ PUBLIC_EMBED = (
     "mxbai-embed-large:latest",
     "all-minilm:latest",
 )
+PUBLIC_CODE = (
+    "qwen2.5-coder:7b",
+    "qwen2.5-coder:latest",
+    "qwen2.5-coder:3b",
+    "deepseek-coder-v2:16b",
+    "deepseek-coder:6.7b",
+    "llama3.3:latest",
+    "llama3.1:8b",
+    "llama3:latest",
+)
 
 MIN_LOCAL_BYTES = 1_000_000
 _HEAVY = ("70b", "72b", "120b", "405b")

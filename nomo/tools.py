@@ -7,7 +7,7 @@ A model reply cannot copy the agent or rewrite its own code.
 import os
 import sys
 
-from nomo import doctor, honcho, ledger, ollama_client, vault
+from nomo import absorb, doctor, graph, honcho, ledger, ollama_client, record, vault
 from nomo import __version__
 from nomo.paths import ROOT, SKILLS, VAULT
 
@@ -45,6 +45,7 @@ def status():
     route = ""
     reason = ""
     embed = ""
+    code = ""
     ollama = ""
     local_count = 0
     skipped_count = 0
@@ -55,6 +56,7 @@ def status():
         route = ollama_client.route_model()
         reason = ollama_client.reason_model()
         embed = ollama_client.embed_model()
+        code = ollama_client.code_model()
         ollama = "up"
         local_count = sum(1 for item in models if select.is_auto(item))
         skipped_count = len(models) - local_count
@@ -68,6 +70,7 @@ def status():
         "route_model": route,
         "reason_model": reason,
         "embed_model": embed or "none",
+        "code_model": code or "none",
         "needle3": _needle_state(),
         "operator": slug,
         "root": ROOT,
@@ -77,6 +80,9 @@ def status():
         "skipped_models": skipped_count,
         "journal_ok": chain["ok"],
         "journal_events": chain["count"],
+        "record_ok": record.verify()["ok"],
+        "record_events": record.verify()["count"],
+        "graph_rows": graph.count(),
     }
 
 
@@ -123,6 +129,9 @@ TOOLS = {
     "ledger_recent": lambda n=8, **_: ledger.recent(int(n)),
     "list_files": lambda folder="", **_: list_files(folder),
     "read_file": lambda path, **_: read_file(path),
+    "graph_note": lambda name, body, kind="decision", evidence="", **_: graph.remember(name, body, kind, evidence),
+    "graph_lookup": lambda q, **_: graph.lookup(q),
+    "absorb": lambda url, **_: absorb.fetch(url),
 }
 
 

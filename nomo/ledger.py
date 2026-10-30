@@ -49,6 +49,12 @@ def append(kind, summary, data=None, actor="nomo"):
     event["hash"] = hashlib.sha256((prev + raw).encode("utf-8")).hexdigest()
     with open(_path(), "a", encoding="utf-8") as handle:
         handle.write(json.dumps(event, ensure_ascii=False) + "\n")
+    try:
+        from nomo import record
+
+        record.seal(kind, summary, data, actor)
+    except Exception:
+        pass
     return event
 
 

@@ -5,7 +5,7 @@ import json
 import sys
 import time
 
-from nomo import agent, doctor, dream, ledger, replicate, runbox, tools
+from nomo import absorb, agent, doctor, dream, evolve, ledger, replicate, runbox, tools
 
 
 def _print(obj):
@@ -44,6 +44,11 @@ def main(argv=None):
     dream_cmd.add_argument("--branches", type=int, default=2)
     dream_cmd.add_argument("--refine", type=int, default=1)
     dream_cmd.add_argument("--rounds", type=int, default=1)
+    evo = sub.add_parser("evolve", help="Architect, critic, and executor. Execution needs NOMO_ALLOW_RUN=1.")
+    evo.add_argument("task")
+    evo.add_argument("--rounds", type=int, default=2)
+    absorb_cmd = sub.add_parser("absorb", help="Save one public page into the vault.")
+    absorb_cmd.add_argument("url")
     par = sub.add_parser("parallel")
     par.add_argument("goal")
     choice = sub.add_parser("choose")
@@ -101,6 +106,12 @@ def main(argv=None):
         return 0
     if args.cmd == "dream":
         _print(dream.run(args.goal, branches=args.branches, refine=args.refine, rounds=args.rounds))
+        return 0
+    if args.cmd == "evolve":
+        _print(evolve.run(args.task, rounds=args.rounds))
+        return 0
+    if args.cmd == "absorb":
+        _print(absorb.fetch(args.url))
         return 0
     if args.cmd == "parallel":
         _print(agent.parallel(args.goal))

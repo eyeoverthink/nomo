@@ -8,7 +8,7 @@ at most three tools. The process exits when the command exits.
 import json
 import os
 
-from nomo import honcho, ledger, ollama_client, tools, vault
+from nomo import honcho, ledger, memory, ollama_client, tools, vault
 
 
 def system_prompt(model):
@@ -74,6 +74,8 @@ def _needle_call(user_text):
                         "evidence": {"type": "string"},
                         "path": {"type": "string"},
                         "folder": {"type": "string"},
+                        "url": {"type": "string"},
+                        "kind": {"type": "string"},
                         "n": {"type": "integer"},
                     },
                 },
@@ -100,7 +102,7 @@ def _as_args(value):
     return {}
 
 
-def _context():
+def _context(user_text):
     vault.ensure()
     honcho.ensure_defaults()
     parts = [
@@ -109,6 +111,7 @@ def _context():
         "PEERS\n" + honcho.context_block(),
         "PROPOSALS\n" + vault.read("dreams/PROPOSALS.md")[-600:],
         "RECENT\n" + json.dumps(ledger.recent(4), ensure_ascii=False)[:1200],
+        "MEMORY\n" + memory.pack(user_text),
     ]
     return "\n\n".join(parts)
 
@@ -123,7 +126,7 @@ def _route_tool(user_text, route):
                 "role": "system",
                 "content": "You only route tools. Reply NONE if no tool is needed. "
                 "Otherwise reply with one JSON object {\"tool\":\"name\",\"args\":{}} and nothing else. "
-                "Tools: status, vault_search, vault_read, vault_write, peer_note, peer_read, ledger_recent, list_files, read_file.",
+                "Tools: status, vault_search, vault_read, vault_write, peer_note, peer_read, ledger_recent, list_files, read_file, graph_note, graph_lookup, absorb.",
             },
             {"role": "user", "content": user_text},
         ],
@@ -179,7 +182,7 @@ def ask(user_text, rounds=3):
             {"role": "system", "content": system_prompt(model)},
             {
                 "role": "user",
-                "content": _context()
+                "content": _context(user_text)
                 + "\n\nOPERATOR\n"
                 + user_text
                 + "\n\nMEASURED\n"

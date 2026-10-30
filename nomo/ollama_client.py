@@ -10,7 +10,7 @@ import urllib.error
 import urllib.request
 
 from nomo import select
-from nomo.paths import EMBED_MODEL, OLLAMA, REASON_MODEL, ROUTE_MODEL
+from nomo.paths import CODE_MODEL, EMBED_MODEL, OLLAMA, REASON_MODEL, ROUTE_MODEL
 
 _CACHE = {"at": 0.0, "models": []}
 
@@ -71,6 +71,11 @@ def reason_model():
 
 def embed_model():
     return select.choose(inventory(), EMBED_MODEL, select.PUBLIC_EMBED, "embed")
+
+
+def code_model():
+    preferred = CODE_MODEL or select.PUBLIC_CODE[0]
+    return select.choose(inventory(), preferred, select.PUBLIC_CODE, "reason") or reason_model()
 
 
 def chat(model, messages, timeout=180, temperature=0.4, num_predict=700):
