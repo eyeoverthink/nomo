@@ -1,0 +1,4 @@
+# Optional tool router. NoMo runs on the Python standard library plus Ollama without this.
+# Windows:  .venv\Scripts\python -m pip install -r requirements.txt
+# macOS and Linux:  .venv/bin/python -m pip install -r requirements.txt
+cactus-needle==3.2.8
