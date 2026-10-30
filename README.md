@@ -125,7 +125,7 @@ The program does not require those aliases. The per-request prompt carries the s
 | `python nomo.py models` | List local tags and skipped tags |
 | `python nomo.py ask "..."` | One turn |
 | `python nomo.py chat` | Turns until a blank line |
-| `python nomo.py dream` | Write one dream note and one proposal |
+| `python nomo.py dream "goal"` | Explore a small tree, replay it, promote a policy |
 | `python nomo.py parallel "..."` | Scout, critic, and builder, then a merge |
 | `python nomo.py choose "question" A B` | Typed choice with an uncalibrated score |
 | `python nomo.py replicate <name>` | Copy a stopped child under `children/` |
@@ -169,7 +169,7 @@ Set `NOMO_OPERATOR` before the first run if the peer card should use a name you 
 
 **Journal.** The `jev-` prefix is this file format. Hosted TypeSafe Jev (`jev-1.14.0`, Choice / Noul / Score) is a different system. This program does not call it and does not ship its weights. `choose` asks the local route model for JSON `{choice, score, because}` and stores `calibrated: false`.
 
-**Dream-RSI.** `dream` reads the journal and writes `vault/dreams/<stamp>-dream.md` plus one line in `vault/dreams/PROPOSALS.md`. The next run reads those files. That is the recursion. The pass leaves the Python source alone.
+**Dream-RSI.** `dream` runs the loop from Zheng, Wu, Zhang, et al., [Dream-RSI](https://github.com/zhengkid/Dream-RSI) (arXiv:2609.14858, 2026). The research code is [google-research/dream-rsi](https://github.com/google-research/dream-rsi). Online exploration writes a small tree of attempts to `vault/dreams/worlds/iterNNN/raw_scores.json`. Offline dreaming replays `parallel_refine`, `best_first`, and `wide` on those saved scores and promotes the policy with the higher reward. A tie keeps the incumbent. The replay does not call the model again. The paper's agent is Gemini and its evaluator runs the candidate program. This clone writes attempts with the local reason model, stores a 0–1 score, and keeps the policy as one of those three names. The cycle leaves `nomo/*.py` alone. Defaults are 2 branches and 1 refinement, capped at 4 branches, 2 refinements, and 3 rounds.
 
 **Parallel.** Three notes run on the route model: scout, critic, builder. The reason model merges them and keeps a step only when one of the notes wrote it. On a single GPU, Ollama queues the three calls.
 

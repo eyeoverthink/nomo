@@ -39,7 +39,11 @@ def main(argv=None):
     ask = sub.add_parser("ask")
     ask.add_argument("text")
     sub.add_parser("chat")
-    sub.add_parser("dream")
+    dream_cmd = sub.add_parser("dream", help="Explore a small tree, replay it, and promote a policy.")
+    dream_cmd.add_argument("goal", nargs="?", default="")
+    dream_cmd.add_argument("--branches", type=int, default=2)
+    dream_cmd.add_argument("--refine", type=int, default=1)
+    dream_cmd.add_argument("--rounds", type=int, default=1)
     par = sub.add_parser("parallel")
     par.add_argument("goal")
     choice = sub.add_parser("choose")
@@ -96,7 +100,7 @@ def main(argv=None):
             print()
         return 0
     if args.cmd == "dream":
-        _print(dream.run())
+        _print(dream.run(args.goal, branches=args.branches, refine=args.refine, rounds=args.rounds))
         return 0
     if args.cmd == "parallel":
         _print(agent.parallel(args.goal))
